@@ -1,0 +1,22 @@
+version: "3"
+services:
+  laravel-app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/usr/share/nginx
+  mysql-app:
+    image: mysql:5.7.22
+    ports:
+      - "3306:3306"
+    volumes:
+      - .docker/dbdata:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: developers-crud
+      MYSQL_ROOT_PASSWORD: 11223344
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
