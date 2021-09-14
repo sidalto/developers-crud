@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Repository\DeveloperRepositoryInterface;
+use Illuminate\Http\Response;
 use App\Http\Resources\DeveloperResource;
+use App\Repository\DeveloperRepositoryInterface;
 
 class DeveloperController extends Controller
 {
@@ -20,11 +21,47 @@ class DeveloperController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $developers = $this->developerRepository->listAll();
+        if (count($request->query) > 0) {
+            if ($request->query('nome')) {
+                $developers = $this->developerRepository->listByQuery('nome', $request->query('nome'));
+            }
 
-        return DeveloperResource::collection($developers);
+            if ($request->query('sexo')) {
+                $developers = $this->developerRepository->listByQuery('sexo', $request->query('sexo'));
+            }
+
+            if ($request->query('idade')) {
+                $developers = $this->developerRepository->listByQuery('idade', $request->query('idade'));
+            }
+
+            if ($request->query('hobby')) {
+                $developers = $this->developerRepository->listByQuery('hobby', $request->query('hobby'));
+            }
+
+            if ($request->query('datanascimento')) {
+                $developers = $this->developerRepository->listByQuery('datanascimento', $request->get('datanascimento'));
+            }
+
+            try {
+                return DeveloperResource::collection($developers)
+                    ->response()
+                    ->setStatusCode(200);
+            } catch (\Throwable $th) {
+                return response('', 404);
+            }
+        }
+
+        try {
+            $developers = $this->developerRepository->listAll();
+
+            return DeveloperResource::collection($developers)
+                ->response()
+                ->setStatusCode(200);
+        } catch (\Throwable $th) {
+            return response('', 404);
+        }
     }
 
     /**
@@ -35,9 +72,15 @@ class DeveloperController extends Controller
      */
     public function store(Request $request)
     {
-        $developer = $this->developerRepository->create($request->all());
+        try {
+            $developer = $this->developerRepository->create($request->all());
 
-        return new DeveloperResource($developer);
+            return (new DeveloperResource($developer))
+                ->response()
+                ->setStatusCode(201);
+        } catch (\Throwable $th) {
+            return response('', 400);
+        }
     }
 
     /**
@@ -48,9 +91,15 @@ class DeveloperController extends Controller
      */
     public function show(int $id)
     {
-        $developer = $this->developerRepository->show($id);
+        try {
+            $developer = $this->developerRepository->show($id);
 
-        return new DeveloperResource($developer);
+            return (new DeveloperResource($developer))
+                ->response()
+                ->setStatusCode(200);
+        } catch (\Throwable $th) {
+            return response('', 404);
+        }
     }
 
     /**
@@ -62,9 +111,15 @@ class DeveloperController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $developer = $this->developerRepository->update($id, $request->all());
+        try {
+            $developer = $this->developerRepository->update($id, $request->all());
 
-        return new DeveloperResource($developer);
+            return (new DeveloperResource($developer))
+                ->response()
+                ->setStatusCode(200);
+        } catch (\Throwable $th) {
+            return response('', 400);
+        }
     }
 
     /**
@@ -75,6 +130,12 @@ class DeveloperController extends Controller
      */
     public function destroy(int $id)
     {
-        $this->developerRepository->delete($id);
+        try {
+            $this->developerRepository->delete($id);
+
+            return response('', 204);
+        } catch (\Throwable $th) {
+            return response('', 400);
+        }
     }
 }

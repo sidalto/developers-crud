@@ -15,7 +15,12 @@ class DeveloperRepository implements DeveloperRepositoryInterface
 
     public function listAll(): iterable
     {
-        return $this->model->all();
+        return $this->model->paginate();
+    }
+
+    public function listByQuery(string $param, string $value): iterable
+    {
+        return $this->model::where($param, 'like', $value . '%')->paginate();
     }
 
     public function create(array $data): Developer
